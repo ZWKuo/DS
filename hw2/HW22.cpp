@@ -10,8 +10,11 @@ private:
     Node * LC;
     Node * RC;
     Node * parent;
+    int flag;
 
 public:
+    void set_flag(int x);
+    Node* get_LC();
     Node();
     Node(int x);
     ~Node();
@@ -35,6 +38,7 @@ Node::Node()
     LC = NULL;
     RC = NULL;
     parent = NULL;
+    flag = 0;
 }
 
 Node::Node(int x){
@@ -42,6 +46,11 @@ Node::Node(int x){
     LC = NULL;
     RC = NULL;
     parent = NULL;
+    flag = 0;
+}
+
+void Node::set_flag(int x){
+    flag = x;
 }
 
 void Node::set(int x){
@@ -61,6 +70,10 @@ void Node::set_LC(Node *x){
 
 void Node::set_RC(Node *x){
     RC = x;
+}
+
+Node* Node::get_LC(){
+    return LC;
 }
 
 Node::~Node()
@@ -183,9 +196,15 @@ Node* Node::find()
         return this;
         }
         else{
+            if(this->get_data() > parent->get_data()){
             Node * tmp = parent;
-            tmp->set_parent(RC);
+            tmp->set_RC(RC); // set_parent(RC)
             return this;
+            }else{
+                 Node * tmp = parent;
+                tmp->set_LC(RC); // set_parent(RC)
+                return this;
+            }
         }
     }
 }
@@ -195,53 +214,83 @@ void Node::del(int x){
         if(LC == NULL)
         { 
             if(RC == NULL){
-                if(parent->get_data() > x)
-                {
-                    parent->set_LC(NULL);
+                if(flag == 0){
+                    if(parent->get_data() > x)
+                    {
+                        parent->set_LC(NULL);
+                    }else{
+                        parent->set_RC(NULL);
+                    }
                 }else{
-                    parent->set_RC(NULL);
+                    parent->set_LC(NULL);
                 }
                 //delete this;
                 cout<<"Number "<<x<<" is deleted !"<<endl;
+                
+                
             }
             else{ // RC != NULL
                 Node *p = RC->find();
-                if(parent->get_data()>x)
-                {
-                    parent->set_LC(p);
+                if(flag == 0 ){
+                    if(parent->get_data()>x)
+                    {
+                        parent->set_LC(p);
+                    }else{
+                        parent->set_RC(p);
+                    }
                 }else{
-                    parent->set_RC(p);
+                    parent->set_LC(p);
+                    p->set_flag(1);
                 }
                 p->set_parent(parent);
-                //delete this;
+                p->set_LC(LC);
+                p->set_RC(RC);
+                RC->set_parent(p);
+                
+                
+                
                 cout<<"Number "<<x<<" is deleted !"<<endl;
-                }
+            }
+
+                
         }
         else{  //LC!=NULL
             if(RC != NULL)
             {
                 Node* p = RC->find();
-                if(parent->get_data() > x)
-                {
-                    parent->set_LC(p);
+                if(flag == 0){
+                    if(parent->get_data() > x)
+                    {
+                        parent->set_LC(p);
+                    }else{
+                        parent->set_RC(p);
+                    }
                 }else{
-                    parent->set_RC(p);
+                    parent->set_LC(p);
+                    p->set_flag(1);
                 }
                 p->set_parent(parent);
                 p->set_LC(LC);
+                p->set_RC(RC);
+                RC->set_parent(p);
                 LC->set_parent(p);
                 //delete this;
+                
                 cout<<"Number "<<x<<" is deleted !"<<endl;
             }
             else{ //RC == NULL
                 LC->set_parent(parent);
-                if(parent->get_data() > x)
-                {
-                    parent->set_LC(LC);
+                if(flag == 0){
+                    if(parent->get_data() > x)
+                    {
+                        parent->set_LC(LC);
+                    }else{
+                        parent->set_RC(LC);
+                    }
                 }else{
-                    parent->set_RC(NULL);
+                    parent->set_LC(LC);
                 }
-                //delete this;
+                
                 cout<<"Number "<<x<<" is deleted !"<<endl;
             }
         }
@@ -303,13 +352,15 @@ int main()
                             key_point += 1;
                             if (flag_tree == 0)
                             {
-                                head.set(tmp);
+                                Node* tmp_node = new Node(tmp);
+                                tmp_node->set_parent(&head);
+                                head.set_LC(tmp_node);
                                 flag_tree = 1;
                                 cout<<"Number "<<tmp<<" is insert !";
                                 continue;
                             }else{
                                 Node* tmp_node = new Node(tmp);
-                                head.insert(tmp_node);
+                                head.get_LC()->insert(tmp_node);
                             }
                         }
                     }   
@@ -328,7 +379,7 @@ int main()
                             {
                                 cout<<"There is not tree in the system !"<<endl;
                             }else{
-                                head.del(tmp);
+                                head.get_LC()->del(tmp);
                                 key_point -= 1;
                                 if( key_point == 0){
                                     flag_tree = 0;
@@ -351,7 +402,7 @@ int main()
                             {
                                 cout<<"There is not tree in the system !"<<endl;
                             }else{
-                                head.search(tmp);
+                                head.get_LC()->search(tmp);
                             }
                         }
                     } 
@@ -362,11 +413,11 @@ int main()
                         cout<<"There is not tree in the system !"<<endl;
                     }else{
                         cout<<"The tree in prefix order : ";
-                        head.prefix(); cout<<endl;
+                        head.get_LC()->prefix(); cout<<endl;
                         cout<<"The tree in infix order : ";
-                        head.infix(); cout<<endl;
+                        head.get_LC()->infix(); cout<<endl;
                         cout<<"The tree in postfix order : ";
-                        head.postfix(); cout<<endl;
+                        head.get_LC()->postfix(); cout<<endl;
                     }
                 }
 
