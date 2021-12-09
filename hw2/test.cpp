@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
+#include <queue>
+#include <stack>
 using namespace std;
 
 class Node
@@ -15,8 +18,10 @@ private:
 public:
     void set_flag(int x);
     Node* get_LC();
+    Node* get_RC();
     Node();
     Node(int x);
+    Node(Node* x);
     ~Node();
     void insert(Node *x);
     void prefix();
@@ -28,6 +33,7 @@ public:
     void set_RC(Node* x);
     void infix();
     void postfix();
+    void level_order();
     void search(int x);
     Node* find();
     void del(int x);
@@ -47,6 +53,13 @@ Node::Node(int x){
     RC = NULL;
     parent = NULL;
     flag = 0;
+}
+
+Node::Node(Node* x){
+    data = x->get_data();
+    LC = x->get_LC();
+    RC = x->get_RC();
+    //parent = x->get_parent();
 }
 
 void Node::set_flag(int x){
@@ -74,6 +87,10 @@ void Node::set_RC(Node *x){
 
 Node* Node::get_LC(){
     return LC;
+}
+
+Node* Node::get_RC(){
+    return RC;
 }
 
 Node::~Node()
@@ -158,6 +175,26 @@ void Node::postfix(){
     }  
     cout<< data<<" " ;
 }
+
+void Node::level_order(){
+    queue<Node*> q;
+    Node* ref = this;
+    q.push(ref);
+    while ( !(q.empty()))
+    {
+        Node* tmp = q.front();
+        q.pop();
+        cout<<tmp->get_data()<<" ";
+        if(tmp->get_LC() != NULL){
+            q.push(tmp->get_LC());
+        }
+        if (tmp->get_RC() != NULL)
+        {
+            q.push(tmp->get_RC());
+        }   
+    }
+}
+
 
 void Node::search(int x){
     if (x == data)
@@ -313,39 +350,140 @@ void Node::del(int x){
         }
     }
 }
+
+void read_file(Node* head){
+    int c = 0;
+    string s;
+    string filename = "bstmap.txt";
+    fstream file(filename);
+    if( !file ) 
+    {   
+        cout << "Error opening " << filename << " for input" << endl;   
+        exit(-1);  
+    }
+    while (getline(file,s))
+    {
+        Node* tmp = new Node(stoi(s));
+        if (c == 0)
+        {
+            tmp->set_parent(head);
+            head->set_LC(tmp);
+            c+=1;
+        } else{
+            head->get_LC()->insert(tmp);
+            c+=1;
+        }
+    }
+}
+
+
+void travel(Node* node , int x , stack<Node> *S){
+    if (node->get_data() == x)
+    {
+        cout<<"CAPO GET THE SWORD !!"<<endl;
+        S->push(*node);
+
+    }
     
+    if(node->get_data() < x)
+     {  
+        if(node->get_RC() == NULL){
+            cout<<"NO SWORD ! "<<endl;
+        }
+        else{
+            S->push(*node);
+            travel(node->get_RC() , x , S);
+        }
+     }
+    if(node->get_data() > x)
+     {  
+        if(node->get_LC() == NULL){
+            cout<<"NO SWORD ! "<<endl;
+        }
+        else{
+            S->push(*node);
+            travel(node->get_LC() , x , S);
+        }
+     }
+}
+
+void travel_mute(Node* node , int x , stack<Node> *S){
+    if (node->get_data() == x)
+    {
+        S->push(*node);
+    }
+    
+    if(node->get_data() < x)
+     {  
+        if(node->get_RC() == NULL){
+            cout<<"NO Meaty ! "<<endl;
+        }
+        else{
+            S->push(*node);
+            travel_mute(node->get_RC() , x , S);
+        }
+     }
+    if(node->get_data() > x)
+     {  
+        if(node->get_LC() == NULL){
+            cout<<"NO Meaty ! "<<endl;
+        }
+        else{
+            S->push(*node);
+            travel_mute(node->get_LC() , x , S);
+        }
+     }
+}
+
 int flag_menu = 1 ;
 int flag_menu2 = 1 ;
 int flag_tree = 0 ;
 int key_point = 0;
+
 int main()
 {
-
+    int cs = 0;
+    int cm = 0;
+    Node* record_sword = new Node[100];
+    Node* record_M = new Node[100];
     Node head;
-    Node a(5);
-    a.set_flag(1);
-    a.set_parent(&head);
-    Node b(3);
-    Node c(4);
-    Node d(7);
-    Node e(10);
-    Node f(9);
-    Node g(8);
-    Node h(2);
+    stack<Node> S,T;
+    read_file(&head);
+    travel(head.get_LC() , 6 , &S);
+    travel_mute(head.get_LC() ,23 , &T);
+    Node c_point;
+    while (!S.empty())
+    {
+        Node tmp(S.top());
+        record_sword[cs] = tmp;
+        cs += 1;
+        S.pop();
+    }
 
-    
-    head.set_LC(&a);
-    a.insert(&b);
-    a.insert(&c);
-    a.insert(&d);
-    a.insert(&e);
-    a.insert(&f);
-    a.insert(&g);
-    a.insert(&h);
-
-
-    head.get_LC()->prefix();
-    head.get_LC()->del(5);
-    head.get_LC()->prefix();
+    int stop_flag = 1;
+    while (!T.empty() and stop_flag)
+    {
+        Node tmp(T.top());
+        record_M[cm] = tmp;
+        cm += 1;
+        T.pop();
+        for (int i = 0; i < cm; i++)
+        {
+            if(record_sword[i].get_data() == tmp.get_data()){
+                stop_flag = 0;
+                break;
+            }   
+        }
+    }
+    cout<<"Shortest path to find the Meaty is : "<<endl;
+    for (int i = 0; i < cs; i++)
+    {
+        cout<<record_sword[i].get_data()<<" -> ";
+    }
+    for (int i = cm-2; i >= 1; i--)
+    {
+        cout<<record_M[i].get_data()<<" -> ";
+    }
+    cout<<record_M[0].get_data()<<endl;
     return 0;
 }

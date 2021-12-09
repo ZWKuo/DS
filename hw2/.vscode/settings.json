@@ -3,7 +3,8 @@
         "__nullptr": "cpp",
         "ostream": "cpp",
         "iostream": "cpp",
-        "new": "cpp"
+        "new": "cpp",
+        "iosfwd": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
