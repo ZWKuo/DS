@@ -6,7 +6,8 @@
 #include <stack>
 using namespace std;
 
-class Node
+
+class Node //class for the node to complish the BST
 {
 private:
     int data;
@@ -67,30 +68,30 @@ void Node::set_flag(int x){
     flag = x;
 }
 
-void Node::set(int x){
+void Node::set(int x){  //mutator for data
     data = x;
     LC = NULL;
     RC = NULL;
     parent = NULL;
 }
 
-void Node::set_parent(Node *x){
+void Node::set_parent(Node *x){  //mutator for parent
     this->parent = x;
 }
 
-void Node::set_LC(Node *x){
+void Node::set_LC(Node *x){ //mutator for LC
     LC = x;
 }
 
-void Node::set_RC(Node *x){
+void Node::set_RC(Node *x){  //mutator for RC
     RC = x;
 }
 
-Node* Node::get_LC(){
+Node* Node::get_LC(){  //accessor for LC
     return LC;
 }
 
-Node* Node::get_RC(){
+Node* Node::get_RC(){  //accessor for RC
     return RC;
 }
 
@@ -98,17 +99,17 @@ Node::~Node()
 {
 }
 
-int Node::get_data()
+int Node::get_data()  //accessor for data
 {
     return data;
 }
 
-int Node::get_parent()
+int Node::get_parent()  //accessor for parent
 {
     return parent->get_data();
 }
 
-void Node::insert(Node *x)
+void Node::insert(Node *x) //insert the Node x to the node 
 {
     if (x->get_data() == data)
     {
@@ -141,7 +142,7 @@ void Node::insert(Node *x)
     }    
 }
 
-void Node::insert_mute(Node *x)
+void Node::insert_mute(Node *x)   //insert which does not show the insertion process
 {
     if (x->get_data() < data)
     {
@@ -152,7 +153,7 @@ void Node::insert_mute(Node *x)
                
         }
         else{
-            LC->insert(x);
+            LC->insert_mute(x);
         }
     }
     if (x->get_data() > data)
@@ -163,12 +164,12 @@ void Node::insert_mute(Node *x)
             RC = x;   
         }
         else{
-            RC->insert(x);  
+            RC->insert_mute(x);  
         }
     }    
 }
 
-void Node::prefix()
+void Node::prefix()  //prefix travel
 { 
     cout<< data<<" ";
      if(LC != NULL)
@@ -181,7 +182,7 @@ void Node::prefix()
     }
 }
 
-void Node::infix(){
+void Node::infix(){ //infix travel
      if(LC != NULL)
      {   
         LC->infix();
@@ -193,7 +194,7 @@ void Node::infix(){
     }  
 }
 
-void Node::postfix(){
+void Node::postfix(){  //postfix travel
      if(LC != NULL)
      {   
         LC->postfix();
@@ -205,7 +206,7 @@ void Node::postfix(){
     cout<< data<<" " ;
 }
 
-void Node::level_order(){
+void Node::level_order(){  //level_order travel
     queue<Node*> q;
     Node* ref = this;
     q.push(ref);
@@ -225,7 +226,7 @@ void Node::level_order(){
 }
 
 
-void Node::search(int x){
+void Node::search(int x){ //find the given data
     if (x == data)
     {
         cout<<"Yo~bro~ "<< x <<" is found !"<<endl;
@@ -251,7 +252,7 @@ void Node::search(int x){
      }
 }
 
-Node* Node::find()
+Node* Node::find()  // find the smallest node in the right subtree 
 { 
     if (LC != NULL)
     {
@@ -259,23 +260,25 @@ Node* Node::find()
     }
     else{
         if(RC == NULL){
+        parent->set_LC(NULL);
         return this;
         }
         else{
-            if(this->get_data() > parent->get_data()){
-            Node * tmp = parent;
-            tmp->set_RC(RC); // set_parent(RC)
-            return this;
-            }else{
-                 Node * tmp = parent;
+            //if(data > parent->get_data()){
+            //Node * tmp = parent;
+            //tmp->set_RC(RC); // set_parent(RC)
+            //return this;}
+            //else{
+                Node * tmp = parent;
                 tmp->set_LC(RC); // set_parent(RC)
+                RC->set_parent(tmp);
                 return this;
-            }
+            //}
         }
     }
 }
 
-void Node::del(int x){
+void Node::del(int x){  // del the given data in the tree
     if(data == x){
         if(LC == NULL)
         { 
@@ -309,12 +312,11 @@ void Node::del(int x){
                     p->set_flag(1);
                 }
                 p->set_parent(parent);
-                p->set_LC(LC);
-                p->set_RC(RC);
-                RC->set_parent(p);
-                
-                
-                
+                if(LC != p){
+                    p->set_LC(LC);}
+                if(RC != p){
+                    p->set_RC(RC);
+                    RC->set_parent(p);}
                 cout<<"Number "<<x<<" is deleted !"<<endl;
             }
 
@@ -336,10 +338,12 @@ void Node::del(int x){
                     p->set_flag(1);
                 }
                 p->set_parent(parent);
-                p->set_LC(LC);
-                p->set_RC(RC);
-                RC->set_parent(p);
-                LC->set_parent(p);
+                if(LC != p){
+                    p->set_LC(LC);
+                    LC->set_parent(p);}
+                if(RC != p){
+                    p->set_RC(RC);
+                    RC->set_parent(p);}
                 //delete this;
                 
                 cout<<"Number "<<x<<" is deleted !"<<endl;
@@ -380,15 +384,15 @@ void Node::del(int x){
     }
 }
 
-void read_file(Node* head){
+bool read_file(Node* head , string f){  // read the given file  and build the tree
     int c = 0;
     string s;
-    string filename = "bstmap.txt";
+    string filename = f;
     fstream file(filename);
     if( !file ) 
     {   
         cout << "Error opening " << filename << " for input" << endl;   
-        exit(-1);  
+        return 0;  
     }
     while (getline(file,s))
     {
@@ -403,10 +407,11 @@ void read_file(Node* head){
             c+=1;
         }
     }
+    return 1;
 }
 
 
-void travel(Node* node , int x , stack<Node> *S){
+void travel(Node* node , int x , stack<Node> *S){ // to get the sword and use stack to record
     if (node->get_data() == x)
     {
         cout<<"CAPO GET THE SWORD !!"<<endl;
@@ -436,7 +441,7 @@ void travel(Node* node , int x , stack<Node> *S){
      }
 }
 
-void travel_mute(Node* node , int x , stack<Node> *S){
+void travel_mute(Node* node , int x , stack<Node> *S){ //fin the Meaty and use stack to record
     if (node->get_data() == x)
     {
         S->push(*node);
@@ -464,13 +469,25 @@ void travel_mute(Node* node , int x , stack<Node> *S){
      }
 }
 
+
+void find_trap(Node* node , queue<Node*>* container , int index){
+    if(node != NULL){
+        find_trap(node->get_LC() , container , index);
+        find_trap(node->get_RC() , container , index);
+        if ((node->get_data()%10 == index) or (node->get_data()/10 == index)){
+            container->push(node);
+        }
+    }
+}
+
+
 int flag_menu = 1 ;
 int flag_menu2 = 1 ;
 int flag_tree = 0 ;
 int key_point = 0;
 int main()
 {
-    while (flag_menu)
+    while (flag_menu)   // main menu
     {
         //Node head;
         //Node Meaty_head;
@@ -479,10 +496,10 @@ int main()
         cout<<"(2) Finnding Meaty ."<<endl;
         cout<<"(0) Escape and face to music next year ."<<endl;
         cin>>choice;
-        if (choice == 1)
+        if (choice == 1)  //choice part 1
         {
             Node head;
-            while (flag_menu2)
+            while (flag_menu2)  
             {
                 char Choice;
                 cout<<"(I)nsert a number. "<<endl;
@@ -580,11 +597,18 @@ int main()
                 }
             }
         }else{
-            if (choice == 2)
+            if (choice == 2)  //choice part 2
             {
                 Node Meaty_head;
+                string f;
+                queue<Node*>* container;
+                cout<<"Please enter the file name :";
+                cin>>f;
                 int sword,Mesty;
-                read_file(&Meaty_head);
+                if( !read_file(&Meaty_head , f)){
+                    cout<<"back to the menu"<<endl;
+                    continue;
+                };
                 cout<<"Load file success . "<<endl;
                 cout<<"Please input the sword location : ";
                 cin>>sword;
@@ -604,13 +628,20 @@ int main()
                         }
                         
                         else{
-                            Meaty_head.get_LC()->del(tmp);
+                            find_trap(Meaty_head.get_LC() , container , tmp);
+                            while(!container->empty()){
+                                Meaty_head.get_LC()->del(container->front()->get_data());
+                                container->pop();
+                            }
+                            
+                            
+                            //Meaty_head.get_LC()->del(tmp);
                             }
                     }
                 int cs = 0;
                 int cm = 0;
-                Node* record_sword = new Node[100];
-                Node* record_M = new Node[100];
+                Node* record_sword = new Node[2048];
+                Node* record_M = new Node[2048];
                 stack<Node> S,T;
                 travel(Meaty_head.get_LC() , sword , &S);
                 travel_mute(Meaty_head.get_LC() ,Mesty , &T);
